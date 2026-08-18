@@ -7,6 +7,7 @@
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/static/pretendard.css">
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;700&display=swap">
 <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
 <style>
   :root{
     --bg:#EFF4FA;
@@ -70,9 +71,9 @@
   .stat-icon{width:36px;height:36px;border-radius:10px;background:var(--teal-soft);color:var(--teal-dark);display:flex;align-items:center;justify-content:center;font-size:16px;flex-shrink:0;}
   .stat-val{font-size:17px;font-weight:800;line-height:1.1;}
   .stat-lbl{font-size:11px;color:var(--ink-soft);margin-top:2px;}
-  .gems-toast{position:relative;z-index:3;max-width:280px;margin:14px auto 0;background:var(--surface);border-radius:14px;padding:10px 14px;box-shadow:0 10px 24px rgba(19,36,54,0.12);display:flex;align-items:center;gap:10px;font-size:12.5px;transform:rotate(-1.2deg);}
-  .gems-toast .check{width:24px;height:24px;border-radius:50%;background:var(--teal);color:#fff;display:flex;align-items:center;justify-content:center;font-size:12px;flex-shrink:0;}
-  .gems-toast a{color:var(--teal-dark);font-weight:700;text-decoration:none;}
+  .gems-toast{position:relative;z-index:3;max-width:640px;margin:16px auto 0;background:var(--teal);border-radius:999px;padding:13px 22px;box-shadow:0 10px 24px rgba(19,36,54,0.18);display:flex;align-items:center;justify-content:center;gap:10px;font-size:13.5px;font-weight:700;color:#fff;white-space:nowrap;overflow-x:auto;}
+  .gems-toast .check{width:22px;height:22px;border-radius:50%;background:rgba(255,255,255,0.25);color:#fff;display:flex;align-items:center;justify-content:center;font-size:12px;flex-shrink:0;}
+  .gems-toast a{color:#fff;font-weight:800;text-decoration:underline;}
 
   @media(max-width:600px){
     .stat-float-row{grid-template-columns:1fr;margin-top:-30px;}
@@ -110,9 +111,10 @@
   .tip-box{background:var(--surface-2);border-radius:10px;padding:16px 18px;margin-top:18px;font-size:14.5px;line-height:1.9;}
 
   /* ---------- date rail ---------- */
-  .date-rail{display:flex;gap:8px;overflow-x:auto;padding:4px 2px 14px;}
-  .date-pill{flex:0 0 auto;font-family:var(--font-mono);font-size:12.5px;padding:8px 14px;border-radius:999px;background:var(--surface);border:1px solid var(--line);color:var(--ink-soft);white-space:nowrap;}
-  .date-pill.active{background:var(--teal);border-color:var(--teal);color:#fff;font-weight:700;}
+  .date-select-wrap{margin:4px 2px 16px;}
+  .date-select-wrap label{display:block;font-size:12.5px;color:var(--ink-soft);margin-bottom:6px;}
+  .date-select{font-family:var(--font-mono);font-size:14px;font-weight:700;padding:10px 14px;border-radius:10px;background:var(--surface);border:1px solid var(--line);color:var(--ink);width:100%;max-width:260px;}
+  .date-select:focus{outline:none;border-color:var(--teal);}
 
   .required-banner{display:flex;align-items:center;gap:10px;background:var(--coral-soft);color:var(--coral-dark);border-radius:10px;padding:12px 14px;font-size:13.5px;font-weight:600;margin-bottom:16px;}
   .required-banner .num{font-family:var(--font-mono);}
@@ -133,9 +135,14 @@
   .chart-panel{background:var(--surface);border:1px solid var(--line);border-radius:var(--radius);padding:22px;}
   .rafts-strip{display:grid;grid-template-columns:1fr 1fr 1fr;gap:1px;background:var(--line);border-radius:10px;overflow:hidden;margin-bottom:16px;}
   .rafts-cell{background:var(--teal-soft);padding:10px 12px;}
+  .rafts-cell .lbl-row{display:flex;align-items:center;justify-content:space-between;gap:6px;}
   .rafts-cell .lbl{font-family:var(--font-mono);font-size:10.5px;color:var(--teal-dark);font-weight:700;}
   .rafts-cell .val{font-size:12.5px;margin-top:4px;color:var(--ink);}
-  .scenario-text{font-size:14px;color:var(--ink);white-space:pre-wrap;margin-bottom:20px;padding-bottom:18px;border-bottom:1px dashed var(--line);}
+  .mini-copy{font-size:10px;border:none;background:none;color:var(--teal-dark);opacity:0.7;padding:0;}
+  .mini-copy:hover{opacity:1;text-decoration:underline;}
+  .scenario-head{display:flex;align-items:center;justify-content:space-between;margin-bottom:6px;}
+  .scenario-head span{font-family:var(--font-mono);font-size:11px;color:var(--ink-faint);text-transform:uppercase;letter-spacing:.04em;}
+  .scenario-text{font-size:16px;line-height:1.75;color:var(--ink);white-space:pre-wrap;margin-bottom:20px;padding-bottom:18px;border-bottom:1px dashed var(--line);}
 
   .soap-row{margin-bottom:16px;}
   .soap-row-head{display:flex;align-items:center;justify-content:space-between;margin-bottom:6px;}
@@ -189,6 +196,13 @@
   .schedule-group{margin-bottom:14px;}
   .schedule-group .date-h{font-family:var(--font-mono);font-weight:700;font-size:13px;display:flex;justify-content:space-between;align-items:center;margin-bottom:6px;}
   .chip{display:inline-flex;align-items:center;gap:6px;background:var(--teal-soft);color:var(--teal-dark);font-size:12px;padding:5px 10px;border-radius:999px;margin:0 6px 6px 0;}
+  .chip-x{border:none;background:none;color:var(--teal-dark);font-size:13px;line-height:1;padding:0;opacity:0.7;}
+  .chip-x:hover{opacity:1;}
+  .req-inline{width:84px;border:1px solid var(--line);border-radius:8px;padding:6px 8px;font-size:12.5px;}
+  .checklist{max-height:260px;overflow-y:auto;border:1px solid var(--line);border-radius:10px;padding:6px;margin-top:8px;}
+  .checklist-item{display:flex;align-items:center;gap:8px;padding:8px 6px;font-size:13px;border-bottom:1px solid var(--line);}
+  .checklist-item:last-child{border-bottom:none;}
+  .checklist-item .cid{font-family:var(--font-mono);font-size:11px;color:var(--ink-faint);}
 
   @media(max-width:600px){
     .rafts-strip{grid-template-columns:1fr;}
@@ -223,9 +237,9 @@
   </div>
 
   <div class="stat-float-row" id="statFloatRow">
-    <div class="stat-card"><div class="stat-icon">📋</div><div><div class="stat-val">-</div><div class="stat-lbl">오늘 등록된 사례</div></div></div>
-    <div class="stat-card"><div class="stat-icon">✏️</div><div><div class="stat-val">-</div><div class="stat-lbl">오늘의 필수 작성 개수</div></div></div>
-    <div class="stat-card"><div class="stat-icon">🗂️</div><div><div class="stat-val">-</div><div class="stat-lbl">전체 등록된 사례 수</div></div></div>
+    <div class="stat-card"><div class="stat-icon">📅</div><div><div class="stat-val">-</div><div class="stat-lbl">선택한 수업날짜</div></div></div>
+    <div class="stat-card"><div class="stat-icon">📋</div><div><div class="stat-val">-</div><div class="stat-lbl">이 날짜 등록된 사례</div></div></div>
+    <div class="stat-card"><div class="stat-icon">✏️</div><div><div class="stat-val">-</div><div class="stat-lbl">이 날짜 필수 작성 개수</div></div></div>
   </div>
   <div class="gems-toast" id="gemsToast" style="display:none;"></div>
 </div>
@@ -376,10 +390,16 @@ function renderDateRail(){
   if(!state.selectedDate || !dates.includes(state.selectedDate)){
     state.selectedDate = dates.includes(today) ? today : dates[dates.length-1];
   }
-  const pills = dates.map(d => `<button class="date-pill ${d===state.selectedDate?'active':''}" data-date="${d}">${d}</button>`).join('');
-  document.getElementById('scheduleSection').innerHTML = `<div class="date-rail">${pills}</div>`;
-  document.querySelectorAll('.date-pill').forEach(b=>{
-    b.addEventListener('click', ()=>{ state.selectedDate = b.dataset.date; renderDateRail(); renderCaseGrid(); renderHeroStats(); });
+  const options = dates.map(d => `<option value="${d}" ${d===state.selectedDate?'selected':''}>${d}${d===today?' (오늘)':''}</option>`).join('');
+  document.getElementById('scheduleSection').innerHTML = `
+    <div class="date-select-wrap">
+      <label>수업 날짜 선택</label>
+      <select class="date-select" id="dateSelect">${options}</select>
+    </div>`;
+  document.getElementById('dateSelect').addEventListener('change', e=>{
+    state.selectedDate = e.target.value;
+    renderCaseGrid();
+    renderHeroStats();
   });
 }
 
@@ -449,10 +469,11 @@ function renderCaseDetail(){
       <div class="cid" style="margin-bottom:6px;">${c['사례ID']}</div>
       <h2 class="section-title" style="font-size:19px;text-transform:none;letter-spacing:normal;margin:0 0 14px;color:var(--ink);">${escapeHtml(c['제목'])}</h2>
       <div class="rafts-strip">
-        <div class="rafts-cell"><div class="lbl">ROLE</div><div class="val">${escapeHtml(c['Role'])}</div></div>
-        <div class="rafts-cell"><div class="lbl">AUDIENCE</div><div class="val">${escapeHtml(c['Audience'])}</div></div>
-        <div class="rafts-cell"><div class="lbl">TASK</div><div class="val">${escapeHtml(c['Task'])}</div></div>
+        <div class="rafts-cell"><div class="lbl-row"><span class="lbl">ROLE</span><button class="mini-copy" data-copyfield="Role">복사</button></div><div class="val">${escapeHtml(c['Role'])}</div></div>
+        <div class="rafts-cell"><div class="lbl-row"><span class="lbl">AUDIENCE</span><button class="mini-copy" data-copyfield="Audience">복사</button></div><div class="val">${escapeHtml(c['Audience'])}</div></div>
+        <div class="rafts-cell"><div class="lbl-row"><span class="lbl">TASK</span><button class="mini-copy" data-copyfield="Task">복사</button></div><div class="val">${escapeHtml(c['Task'])}</div></div>
       </div>
+      <div class="scenario-head"><span>시나리오</span><button class="copy-btn" data-copyfield="시나리오">복사</button></div>
       <div class="scenario-text">${escapeHtml(c['시나리오'])}</div>
       ${rows}
     </div>
@@ -463,6 +484,11 @@ function renderCaseDetail(){
   `;
 
   document.getElementById('backBtn').addEventListener('click', ()=>{ state.selectedCase=null; renderCaseDetail(); });
+  container.querySelectorAll('[data-copyfield]').forEach(btn=>{
+    btn.addEventListener('click', ()=>{
+      navigator.clipboard.writeText(c[btn.dataset.copyfield] || '').then(()=>toast(btn.dataset.copyfield + ' 복사 완료'));
+    });
+  });
   SOAP_ROWS.forEach(r=>{
     document.getElementById('row-'+r.key).addEventListener('input', e=>{ ans[r.key] = e.target.value; });
   });
@@ -489,6 +515,72 @@ function buildMarkdown(c, ans){
   return md.trim();
 }
 
+function buildCasePdfDoc(item){
+  const soapRows = [
+    {label:'S', en:'Subjective', val:item['모범_S']},
+    {label:'O', en:'Objective', val:item['모범_O']},
+    {label:'A-1', en:'Assessment · Diagnostic Impression', val:item['모범_A1']},
+    {label:'A-2', en:'Assessment · Pathophysiology', val:item['모범_A2']},
+    {label:'P', en:'Plan', val:item['모범_P']},
+    {label:'E', en:'Explanation', val:item['모범_E']}
+  ];
+  const holder = document.createElement('div');
+  holder.style.cssText = 'position:fixed;top:0;left:-9999px;width:700px;background:#ffffff;padding:36px;font-family:Pretendard,-apple-system,sans-serif;color:#15241F;';
+  holder.innerHTML = `
+    <div style="font-family:'JetBrains Mono',monospace;font-size:11px;color:#8C9CAE;margin-bottom:6px;">${escapeHtml(item['사례ID']||'')}</div>
+    <h1 style="font-size:20px;margin:0 0 16px;">${escapeHtml(item['제목']||'')}</h1>
+    <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:1px;background:#DCE6F1;border-radius:10px;overflow:hidden;margin-bottom:18px;">
+      <div style="background:#E3F1FC;padding:10px 12px;"><div style="font-family:'JetBrains Mono',monospace;font-size:10px;color:#0C5590;font-weight:700;">ROLE</div><div style="font-size:12.5px;margin-top:4px;">${escapeHtml(item['Role']||'')}</div></div>
+      <div style="background:#E3F1FC;padding:10px 12px;"><div style="font-family:'JetBrains Mono',monospace;font-size:10px;color:#0C5590;font-weight:700;">AUDIENCE</div><div style="font-size:12.5px;margin-top:4px;">${escapeHtml(item['Audience']||'')}</div></div>
+      <div style="background:#E3F1FC;padding:10px 12px;"><div style="font-family:'JetBrains Mono',monospace;font-size:10px;color:#0C5590;font-weight:700;">TASK</div><div style="font-size:12.5px;margin-top:4px;">${escapeHtml(item['Task']||'')}</div></div>
+    </div>
+    <div style="font-family:'JetBrains Mono',monospace;font-size:11px;color:#8C9CAE;text-transform:uppercase;margin-bottom:6px;">시나리오</div>
+    <div style="font-size:14px;line-height:1.7;white-space:pre-wrap;margin-bottom:22px;padding-bottom:16px;border-bottom:1px dashed #DCE6F1;">${escapeHtml(item['시나리오']||'')}</div>
+    <div style="font-size:13px;font-weight:700;color:#0C5590;margin-bottom:10px;">모범답안 (교사용)</div>
+    ${soapRows.map(r=>`
+      <div style="margin-bottom:14px;">
+        <div style="display:flex;align-items:center;gap:8px;margin-bottom:5px;">
+          <span style="font-family:'JetBrains Mono',monospace;font-weight:700;font-size:12px;background:#1478C4;color:#fff;padding:3px 9px;border-radius:6px;">${r.label}</span>
+          <span style="font-family:'JetBrains Mono',monospace;font-size:11px;color:#0C5590;">${r.en}</span>
+        </div>
+        <div style="font-size:13.5px;line-height:1.7;white-space:pre-wrap;background:#F5F8FB;border-radius:8px;padding:10px 12px;">${escapeHtml(r.val || '(내용 없음)')}</div>
+      </div>`).join('')}
+  `;
+  return holder;
+}
+
+async function exportCasePdf(item){
+  if(!item){ toast('사례 정보를 찾을 수 없습니다.'); return; }
+  toast('PDF 생성 중...');
+  const holder = buildCasePdfDoc(item);
+  document.body.appendChild(holder);
+  try{
+    const canvas = await html2canvas(holder, {backgroundColor:'#ffffff', scale:2});
+    document.body.removeChild(holder);
+    const { jsPDF } = window.jspdf;
+    const pdf = new jsPDF('p','mm','a4');
+    const pageWidth = 210, pageHeight = 297;
+    const imgWidth = pageWidth;
+    const imgHeight = canvas.height * imgWidth / canvas.width;
+    const imgData = canvas.toDataURL('image/png');
+    let heightLeft = imgHeight;
+    let position = 0;
+    pdf.addImage(imgData, 'PNG', 0, position, imgWidth, imgHeight);
+    heightLeft -= pageHeight;
+    while(heightLeft > 0){
+      position = heightLeft - imgHeight;
+      pdf.addPage();
+      pdf.addImage(imgData, 'PNG', 0, position, imgWidth, imgHeight);
+      heightLeft -= pageHeight;
+    }
+    pdf.save((item['사례ID'] || 'soape') + '_모범답안.pdf');
+    toast('PDF 저장 완료');
+  }catch(err){
+    if(holder.parentNode) document.body.removeChild(holder);
+    toast('PDF 생성에 실패했습니다.');
+  }
+}
+
 function saveAsImage(c){
   const original = document.getElementById('chartPanel');
   const clone = original.cloneNode(true);
@@ -502,7 +594,7 @@ function saveAsImage(c){
     div.textContent = ta.value || '(작성 없음)';
     ta.parentNode.replaceChild(div, ta);
   });
-  clone.querySelectorAll('.copy-btn').forEach(b=>b.remove());
+  clone.querySelectorAll('.copy-btn, .mini-copy').forEach(b=>b.remove());
   clone.style.position = 'fixed';
   clone.style.top = '0';
   clone.style.left = '-9999px';
@@ -550,7 +642,7 @@ async function doLogin(){
   try{
     await loadAdminData(pw);
     document.getElementById('modalRoot').innerHTML = '';
-    renderAdminShell('systems');
+    renderAdminShell('schedule');
   }catch(err){
     errBox.style.display='block';
     errBox.textContent = err.message;
@@ -567,9 +659,9 @@ function renderAdminShell(tab){
         <button class="icon-btn" id="adminClose">✕</button>
       </div>
       <div class="admin-tabs">
-        <button class="admin-tab" data-tab="systems">계통 관리</button>
-        <button class="admin-tab" data-tab="cases">사례 관리</button>
         <button class="admin-tab" data-tab="schedule">수업일정 관리</button>
+        <button class="admin-tab" data-tab="cases">사례 관리</button>
+        <button class="admin-tab" data-tab="systems">계통 관리</button>
         <button class="admin-tab" data-tab="settings">설정</button>
       </div>
       <div class="admin-body" id="adminBody"></div>
@@ -637,7 +729,7 @@ function renderCasesTab(){
     const sys = select.value;
     const list = state.adminData.systems[sys] || [];
     document.getElementById('caseList').innerHTML = `<div class="admin-card">${
-      list.map(c=>`<div class="admin-row"><span>${c['사례ID']} · ${escapeHtml(c['제목'])}</span><button class="pill-btn" data-editcase="${c['사례ID']}">편집</button></div>`).join('')
+      list.map(c=>`<div class="admin-row"><span>${c['사례ID']} · ${escapeHtml(c['제목'])}</span><span style="display:flex;gap:6px;"><button class="pill-btn" data-pdfcase="${c['사례ID']}">PDF 저장</button><button class="pill-btn" data-viewcase="${c['사례ID']}">답안 보기</button><button class="pill-btn" data-editcase="${c['사례ID']}">편집</button></span></div>`).join('')
       || '<p class="empty-note">등록된 사례가 없습니다.</p>'
     }</div>`;
     document.querySelectorAll('[data-editcase]').forEach(b=>{
@@ -646,6 +738,42 @@ function renderCasesTab(){
         renderCaseEditForm(item, sys);
       });
     });
+    document.querySelectorAll('[data-viewcase]').forEach(b=>{
+      b.addEventListener('click', ()=>{
+        const item = list.find(x=>x['사례ID']===b.dataset.viewcase);
+        renderCaseViewPanel(item);
+      });
+    });
+    document.querySelectorAll('[data-pdfcase]').forEach(b=>{
+      b.addEventListener('click', ()=>{
+        const item = list.find(x=>x['사례ID']===b.dataset.pdfcase);
+        exportCasePdf(item);
+      });
+    });
+  }
+
+  function renderCaseViewPanel(item){
+    const viewFields = [
+      {k:'제목', label:'제목'}, {k:'Role', label:'Role'}, {k:'Audience', label:'Audience'}, {k:'Task', label:'Task'},
+      {k:'시나리오', label:'시나리오'},
+      {k:'모범_S', label:'모범답안 S'}, {k:'모범_O', label:'모범답안 O'},
+      {k:'모범_A1', label:'모범답안 A-1'}, {k:'모범_A2', label:'모범답안 A-2'},
+      {k:'모범_P', label:'모범답안 P'}, {k:'모범_E', label:'모범답안 E'}
+    ];
+    document.getElementById('caseEditWrap').innerHTML = `
+      <div class="admin-card">
+        <div class="section-title">${item['사례ID']} 조회 (읽기 전용)</div>
+        ${viewFields.map(f=>`
+          <div class="field"><label>${f.label}</label>
+            <div style="white-space:pre-wrap;background:var(--surface-2);border-radius:8px;padding:9px 11px;font-size:13.5px;">${escapeHtml(item[f.k] || '(내용 없음)')}</div>
+          </div>`).join('')}
+        <div class="modal-actions">
+          <button class="btn btn-secondary" id="closeCaseView">닫기</button>
+          <button class="btn btn-primary" id="pdfFromView">PDF로 저장</button>
+        </div>
+      </div>`;
+    document.getElementById('closeCaseView').addEventListener('click', ()=> document.getElementById('caseEditWrap').innerHTML='');
+    document.getElementById('pdfFromView').addEventListener('click', ()=> exportCasePdf(item));
   }
 
   function renderCaseEditForm(item, sys){
@@ -686,41 +814,97 @@ function renderCasesTab(){
 
 function renderScheduleTab(){
   const body = document.getElementById('adminBody');
-  const dates = [...new Set(state.adminData.schedule.map(s=>s.date))].sort();
   const names = systemNames();
-  const allCases = names.flatMap(n => state.adminData.systems[n].map(c=>({sys:n, id:c['사례ID'], title:c['제목']})));
 
-  const groups = dates.map(d=>{
-    const entries = state.adminData.schedule.filter(s=>s.date===d);
-    const chips = entries.map(e=>`<span class="chip">${e.caseId}</span>`).join('');
-    return `<div class="schedule-group admin-card">
-      <div class="date-h"><span>${d} <span class="en-term">필수 ${entries[0].requiredCount||'-'}개</span></span>
-        <button class="pill-btn danger" data-resetdate="${d}">이 날짜 초기화</button></div>
-      <div>${chips}</div>
-    </div>`;
-  }).join('');
+  function groupsHtml(){
+    const dates = [...new Set(state.adminData.schedule.map(s=>s.date))].sort();
+    if(dates.length===0) return '<p class="empty-note">등록된 수업일정이 없습니다.</p>';
+    return dates.map(d=>{
+      const entries = state.adminData.schedule.filter(s=>s.date===d);
+      const reqVal = entries[0].requiredCount || '';
+      const chips = entries.map(e=>`<span class="chip">${e.caseId}<button class="chip-x" data-removecase="${d}::${e.caseId}" title="삭제">×</button></span>`).join('');
+      return `<div class="schedule-group admin-card">
+        <div class="date-h">
+          <span>${d}</span>
+          <span style="display:flex;align-items:center;gap:6px;">
+            <input type="number" class="req-inline" data-reqdate="${d}" value="${reqVal}" placeholder="필수개수">
+            <button class="pill-btn" data-savereq="${d}">저장</button>
+            <button class="pill-btn danger" data-resetdate="${d}">이 날짜 초기화</button>
+          </span>
+        </div>
+        <div>${chips || '<span class="en-term">등록된 사례 없음</span>'}</div>
+      </div>`;
+    }).join('');
+  }
 
   body.innerHTML = `
-    ${groups || '<p class="empty-note">등록된 수업일정이 없습니다.</p>'}
+    <div id="scheduleGroups">${groupsHtml()}</div>
     <div class="section-title">사례 등록</div>
-    <div class="inline-form">
-      <input type="date" id="schDate">
-      <select id="schCase">${allCases.map(c=>`<option value="${c.id}">${c.sys} · ${c.id} · ${c.title}</option>`).join('')}</select>
-      <input type="number" id="schCount" placeholder="필수작성개수" style="width:120px;">
-      <button class="btn btn-primary" id="schAddBtn">등록</button>
+    <div class="admin-card">
+      <div class="inline-form" style="margin-bottom:12px;">
+        <input type="date" id="schDate">
+        <input type="number" id="schCount" placeholder="이 날짜의 필수작성개수" style="width:170px;">
+      </div>
+      <div class="field"><label>계통 선택 → 등록할 사례 체크</label>
+        <select id="schSystem">${names.map(n=>`<option value="${n}">${n}</option>`).join('')}</select>
+      </div>
+      <div id="schChecklist" class="checklist"></div>
+      <div class="modal-actions"><button class="btn btn-primary" id="schRegisterBtn">체크한 사례 일괄 등록</button></div>
     </div>`;
 
-  document.getElementById('schAddBtn').addEventListener('click', async ()=>{
+  function renderChecklist(){
+    const sys = document.getElementById('schSystem').value;
+    const list = state.adminData.systems[sys] || [];
+    document.getElementById('schChecklist').innerHTML = list.map(c => `
+      <label class="checklist-item">
+        <input type="checkbox" value="${c['사례ID']}">
+        <span class="cid">${c['사례ID']}</span> ${escapeHtml(c['제목'])}
+      </label>`).join('') || '<p class="empty-note">등록된 사례가 없습니다.</p>';
+  }
+  document.getElementById('schSystem').addEventListener('change', renderChecklist);
+  renderChecklist();
+
+  document.getElementById('schRegisterBtn').addEventListener('click', async ()=>{
     const date = document.getElementById('schDate').value;
-    const caseId = document.getElementById('schCase').value;
     const count = document.getElementById('schCount').value;
-    if(!date || !caseId) return toast('날짜와 사례를 선택해주세요.');
+    const checked = [...document.querySelectorAll('#schChecklist input:checked')].map(i=>i.value);
+    if(!date) return toast('날짜를 선택해주세요.');
+    if(checked.length===0) return toast('등록할 사례를 하나 이상 체크해주세요.');
     try{
-      await api('addScheduleEntry', {}, {date, caseId, requiredCount: count});
+      const existing = new Set(state.adminData.schedule.filter(s=>s.date===date).map(s=>s.caseId));
+      for(const caseId of checked){
+        if(existing.has(caseId)) continue;
+        await api('addScheduleEntry', {}, {date, caseId, requiredCount: count});
+      }
+      if(count) await api('updateScheduleRequiredCount', {}, {date, requiredCount: count});
       await loadAdminData(state.adminPw);
       toast('등록되었습니다.');
       renderScheduleTab();
     }catch(e){ toast(e.message); }
+  });
+
+  document.querySelectorAll('[data-savereq]').forEach(b=>{
+    b.addEventListener('click', async ()=>{
+      const date = b.dataset.savereq;
+      const val = document.querySelector(`[data-reqdate="${date}"]`).value;
+      try{
+        await api('updateScheduleRequiredCount', {}, {date, requiredCount: val});
+        await loadAdminData(state.adminPw);
+        toast('필수작성개수가 수정되었습니다.');
+        renderScheduleTab();
+      }catch(e){ toast(e.message); }
+    });
+  });
+  document.querySelectorAll('[data-removecase]').forEach(b=>{
+    b.addEventListener('click', async ()=>{
+      const [date, caseId] = b.dataset.removecase.split('::');
+      try{
+        await api('removeScheduleEntry', {}, {date, caseId});
+        await loadAdminData(state.adminPw);
+        toast('사례가 삭제되었습니다.');
+        renderScheduleTab();
+      }catch(e){ toast(e.message); }
+    });
   });
   document.querySelectorAll('[data-resetdate]').forEach(b=>{
     b.addEventListener('click', async ()=>{
@@ -758,27 +942,26 @@ function renderSettingsTab(){
 
 /* ======================= 히어로: 스탯 카드 / CTA / Gems 토스트 ======================= */
 function renderHeroStats(){
-  const dates = allScheduleDates();
-  const todayEntries = state.studentData.schedule.filter(s=>s.date===state.selectedDate);
-  const totalCases = Object.values(state.studentData.systems).reduce((sum, arr)=>sum+arr.length, 0);
-  const required = todayEntries[0] ? (todayEntries[0].requiredCount || '-') : '-';
+  const entries = state.studentData.schedule.filter(s=>s.date===state.selectedDate);
+  const required = entries[0] ? (entries[0].requiredCount || '-') : '-';
+  const dateLabel = state.selectedDate || '-';
 
   const stats = [
-    {icon:'📋', val: todayEntries.length, lbl:'오늘 등록된 사례'},
-    {icon:'✏️', val: required, lbl:'오늘의 필수 작성 개수'},
-    {icon:'🗂️', val: totalCases, lbl:'전체 등록된 사례 수'}
+    {icon:'📅', val: dateLabel, lbl:'선택한 수업날짜', mono:true},
+    {icon:'📋', val: entries.length, lbl:'이 날짜 등록된 사례'},
+    {icon:'✏️', val: required, lbl:'이 날짜 필수 작성 개수'}
   ];
   document.getElementById('statFloatRow').innerHTML = stats.map(s=>`
     <div class="stat-card">
       <div class="stat-icon">${s.icon}</div>
-      <div><div class="stat-val">${s.val}</div><div class="stat-lbl">${s.lbl}</div></div>
+      <div><div class="stat-val" ${s.mono?'style="font-family:var(--font-mono);font-size:14.5px;"':''}>${s.val}</div><div class="stat-lbl">${s.lbl}</div></div>
     </div>`).join('');
 
   const gemsBox = document.getElementById('gemsToast');
   const link = state.studentData.gemsLink;
   if(link){
     gemsBox.style.display = 'flex';
-    gemsBox.innerHTML = `<div class="check">✓</div><div>작성이 막막하다면? <a href="${escapeHtml(link)}" target="_blank" rel="noopener">Gemini Gems 열어보기 →</a></div>`;
+    gemsBox.innerHTML = `<span class="check">✓</span><span>작성이 막막하다면?</span><a href="${escapeHtml(link)}" target="_blank" rel="noopener">Gemini Gems 열어보기 →</a>`;
   }else{
     gemsBox.style.display = 'none';
   }
