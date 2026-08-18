@@ -818,6 +818,8 @@ function renderCasesTab(){
 function renderScheduleTab(){
   const body = document.getElementById('adminBody');
   const names = systemNames();
+  if(!state.scheduleForm) state.scheduleForm = {date:'', system: names[0] || ''};
+  if(!names.includes(state.scheduleForm.system)) state.scheduleForm.system = names[0] || '';
 
   function groupsHtml(){
     const dates = [...new Set(state.adminData.schedule.map(s=>s.date))].sort();
@@ -845,11 +847,11 @@ function renderScheduleTab(){
     <div class="section-title">사례 등록</div>
     <div class="admin-card">
       <div class="inline-form" style="margin-bottom:12px;">
-        <input type="date" id="schDate">
+        <input type="date" id="schDate" value="${state.scheduleForm.date}">
         <input type="number" id="schCount" placeholder="이 날짜의 필수작성개수" style="width:170px;">
       </div>
       <div class="field"><label>계통 선택 → 등록할 사례 체크</label>
-        <select id="schSystem">${names.map(n=>`<option value="${n}">${n}</option>`).join('')}</select>
+        <select id="schSystem">${names.map(n=>`<option value="${n}" ${n===state.scheduleForm.system?'selected':''}>${n}</option>`).join('')}</select>
       </div>
       <div id="schChecklist" class="checklist"></div>
       <div class="modal-actions"><button class="btn btn-primary" id="schRegisterBtn">체크한 사례 일괄 등록</button></div>
@@ -870,8 +872,18 @@ function renderScheduleTab(){
       </label>`;
     }).join('') || '<p class="empty-note">등록된 사례가 없습니다.</p>';
   }
-  document.getElementById('schSystem').addEventListener('change', renderChecklist);
-  document.getElementById('schDate').addEventListener('change', renderChecklist);
+  document.getElementById('schSystem').addEventListener('change', ()=>{
+    state.scheduleForm.system = document.getElementById('schSystem').value;
+    renderChecklist();
+  });
+  document.getElementById('schDate').addEventListener('change', ()=>{
+    state.scheduleForm.date = document.getElementById('schDate').value;
+    renderChecklist();
+  });
+  document.getElementById('schDate').addEventListener('input', ()=>{
+    state.scheduleForm.date = document.getElementById('schDate').value;
+    renderChecklist();
+  });
   renderChecklist();
 
   document.getElementById('schRegisterBtn').addEventListener('click', async ()=>{
