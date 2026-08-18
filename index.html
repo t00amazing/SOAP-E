@@ -203,6 +203,9 @@
   .checklist-item{display:flex;align-items:center;gap:8px;padding:8px 6px;font-size:13px;border-bottom:1px solid var(--line);}
   .checklist-item:last-child{border-bottom:none;}
   .checklist-item .cid{font-family:var(--font-mono);font-size:11px;color:var(--ink-faint);}
+  .checklist-item.already{background:var(--surface-2);color:var(--ink-faint);border-radius:8px;}
+  .checklist-item.already .cid{color:var(--ink-faint);}
+  .already-badge{margin-left:auto;font-family:var(--font-mono);font-size:10.5px;font-weight:700;color:var(--teal-dark);background:var(--teal-soft);padding:3px 8px;border-radius:999px;white-space:nowrap;}
 
   @media(max-width:600px){
     .rafts-strip{grid-template-columns:1fr;}
@@ -854,14 +857,21 @@ function renderScheduleTab(){
 
   function renderChecklist(){
     const sys = document.getElementById('schSystem').value;
+    const dateVal = document.getElementById('schDate').value;
     const list = state.adminData.systems[sys] || [];
-    document.getElementById('schChecklist').innerHTML = list.map(c => `
-      <label class="checklist-item">
-        <input type="checkbox" value="${c['사례ID']}">
+    const registeredIds = new Set(state.adminData.schedule.filter(s=>s.date===dateVal).map(s=>s.caseId));
+    document.getElementById('schChecklist').innerHTML = list.map(c => {
+      const already = dateVal && registeredIds.has(c['사례ID']);
+      return `
+      <label class="checklist-item ${already ? 'already' : ''}">
+        <input type="checkbox" value="${c['사례ID']}" ${already ? 'disabled' : ''}>
         <span class="cid">${c['사례ID']}</span> ${escapeHtml(c['제목'])}
-      </label>`).join('') || '<p class="empty-note">등록된 사례가 없습니다.</p>';
+        ${already ? '<span class="already-badge">이미 등록됨</span>' : ''}
+      </label>`;
+    }).join('') || '<p class="empty-note">등록된 사례가 없습니다.</p>';
   }
   document.getElementById('schSystem').addEventListener('change', renderChecklist);
+  document.getElementById('schDate').addEventListener('change', renderChecklist);
   renderChecklist();
 
   document.getElementById('schRegisterBtn').addEventListener('click', async ()=>{
